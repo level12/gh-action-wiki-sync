@@ -10,92 +10,33 @@ package_path = Path.cwd()
 nox.options.default_venv_backend = 'uv'
 
 
-def test_run(session, *args):
+@nox.session
+def tests(session: nox.Session):
     session.install('-r', 'requirements/base.txt')
     session.install('-e', '.')
-
-    args = (*args, *session.posargs)
     session.run(
         'pytest',
-        # Use our pytest.ini to isolate the test run from the
+        # use our pytest.ini for warning management
         '-c=ci/pytest.ini',
         '-ra',
         '--tb=native',
         '--strict-markers',
-        '--cov=climate',
+        '--cov=wikisyncghaction',
         '--cov-config=.coveragerc',
         '--cov-report=xml',
         '--no-cov-on-fail',
-        '--report-permissions',
         f'--junit-xml={package_path}/ci/test-reports/{session.name}.pytests.xml',
-        *args,
-    )
-
-
-def _test_migrations(session):
-    migrations_dpath = Path('src/test_migrations')
-    migration_count = len(list(migrations_dpath.glob('*.py')))
-    if not migration_count:
-        print('No migrations found')
-        return
-
-    test_run(
-        session,
-        migrations_dpath,
+        'src',
+        *session.posargs,
     )
 
 
 @nox.session
-def test_all(session: nox.Session):
-    test_run(session, 'src/climate')
-    _test_migrations(session)
-
-
-@nox.session
-def precommit(session: nox.Session):
+def standards(session: nox.Session):
     session.install('-c', 'requirements/dev.txt', 'pre-commit')
     session.run(
         'pre-commit',
         'run',
+        '--show-diff-on-failure',
         '--all-files',
     )
-
-
-@nox.session
-def audit(session: nox.Session):
-    # Much faster to install the deps first and have pip-audit run agains the venv
-    session.install('-r', 'requirements/dev.txt')
-    session.run(
-        'pip-audit',
-        '--desc',
-        '--skip-editable',
-    )
-
-
-@nox.session
-def alembic(session: nox.Session):
-    session.install('-r', 'requirements/base.txt')
-    session.run('python', 'scripts/count-heads')
-
-
-# The following sessions are intended for CI and therefore don't run by default
-@nox.session(default=False)
-def test_part_calcs(session: nox.Session):
-    test_run(
-        session,
-        'src/climate/residuals/tests/test_calc',
-    )
-
-
-@nox.session(default=False)
-def test_part_remaining(session: nox.Session):
-    test_run(
-        session,
-        '--ignore=src/climate/residuals/tests/test_calc',
-        'src/climate',
-    )
-
-
-@nox.session(default=False)
-def test_migrations(session: nox.Session):
-    _test_migrations(session)

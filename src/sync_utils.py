@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import logging
+from os import environ
 from pathlib import Path
 import subprocess
 import sys
@@ -7,7 +8,7 @@ import sys
 
 logging.basicConfig(level=logging.INFO)
 
-project_dpath = Path(__file__).parent
+proj_src_dpath = Path(__file__).parent
 
 
 def sub_run(*args, capture=False, **kwargs) -> subprocess.CompletedProcess:
@@ -19,6 +20,11 @@ def sub_run(*args, capture=False, **kwargs) -> subprocess.CompletedProcess:
 
 def stderr(*args):
     print(*args, file=sys.stderr)
+
+
+def bool_env(env_key: str):
+    val = environ.get(env_key, '')
+    return val.lower() in ('true', 't', '1', 'enable', 'on')
 
 
 @dataclass

@@ -1,6 +1,5 @@
 line-length = 100
 target-version = 'py312'
-src = ['climate', 'alembic']
 
 [format]
 line-ending = 'lf'
@@ -32,7 +31,7 @@ select = [
     'F',   # ruff default: pyflakes
     'I',   # isort
     'Q',   # flake8-quotes
-    # 'UP',  # pyupgrade
+    'UP',  # pyupgrade
     'YTT', # flake8-2020
     'B',   # flake8-bandit
     'A',   # flake8-builtins
@@ -42,10 +41,10 @@ select = [
     'EXE', # flake8-executable
     'PIE', # flake8-pie
     'COM', # flake-8 commas
-    # 'RUF', # ruff specific
+    'RUF', # ruff specific
     'SIM', # flake8-simplify
     'ISC',  # https://pypi.org/project/flake8-implicit-str-concat/
-    # 'PTH',  # flake8-use-pathlib
+    'PTH',  # flake8-use-pathlib
     # 'DTZ',  # flake8-datetimez
 
 ]
@@ -71,13 +70,12 @@ ignore = [
     'Q003',    # avoidable-escaped-quote
 ]
 
-[lint.per-file-ignores]
-# tests should be allowed to `assert False`
-'**/testing.py' = ['B011']
-'**/tests/*' = ['B011']
+# [per-file-ignores]
+# 'mu/cli/__init__.py' = ['F401', 'I001']
+
 
 [lint.flake8-builtins]
-builtins-ignorelist = ['id', 'help', 'compile', 'format', 'filter']
+builtins-ignorelist = ['id', 'help', 'compile']
 
 
 [lint.flake8-quotes]
@@ -89,6 +87,4 @@ inline-quotes = 'single'
 [lint.isort]
 lines-after-imports = 2
 force-sort-within-sections = true
-known-first-party = ['climate', 'tasks_lib']
-# Ruff seeminly gets confused when sorting imports in climate.celery
-known-third-party = ['celery']
+known-first-party = ['tasks_lib']

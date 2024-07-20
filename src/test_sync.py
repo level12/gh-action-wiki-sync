@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from os import environ
 from pathlib import Path
 
-from sync_utils import Git, project_dpath, sub_run
+from sync_utils import Git, proj_src_dpath, sub_run
 
 
-wiki_sync_py = project_dpath / 'wiki-sync.py'
+wiki_sync_py = proj_src_dpath / 'wiki-sync.py'
 
 
 @dataclass

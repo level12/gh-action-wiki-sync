@@ -5,13 +5,10 @@ import shutil
 import sys
 
 import click
-from sync_utils import Git, sub_run
+from sync_utils import Git, bool_env, sub_run
 
 
-def bool_env(env_key: str):
-    val = environ.get(env_key, '')
-    return val.lower() in ('true', 't', '1', 'enable', 'on')
-
+VERSION = '0.1.0'
 
 is_gh_action: bool = bool_env('GITHUB_ACTIONS')
 gh_repo = environ['GITHUB_REPOSITORY']
