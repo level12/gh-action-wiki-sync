@@ -18,5 +18,3 @@ readme = 'readme.md'
 
 [project.scripts]
 'none' = 'none.cli:main'
-
-

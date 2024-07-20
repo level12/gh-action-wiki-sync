@@ -12,7 +12,7 @@ nox.options.default_venv_backend = 'uv'
 
 @nox.session
 def tests(session: nox.Session):
-    session.install('-r', 'requirements/base.txt')
+    session.install('-r', 'requirements/test.txt')
     session.install('-e', '.')
     session.run(
         'pytest',
@@ -21,11 +21,6 @@ def tests(session: nox.Session):
         '-ra',
         '--tb=native',
         '--strict-markers',
-        '--cov=wikisyncghaction',
-        '--cov-config=.coveragerc',
-        '--cov-report=xml',
-        '--no-cov-on-fail',
-        f'--junit-xml={package_path}/ci/test-reports/{session.name}.pytests.xml',
         'src',
         *session.posargs,
     )
@@ -37,6 +32,5 @@ def standards(session: nox.Session):
     session.run(
         'pre-commit',
         'run',
-        '--show-diff-on-failure',
         '--all-files',
     )
