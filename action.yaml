@@ -6,11 +6,11 @@ inputs:
   #   description: 'Show debug info'
   #   required: false
   #   default: false
-  run-sync:
+  run_sync:
     description: 'Run the sync.  Set false when debugging just the workflow.'
     required: false
     default: True
-  docs-path:
+  docs_path:
     description: >
       Relative to project root.  Use '' for project root.
       EVERYTHING in this folder will be copied to the wiki except .git and .github
