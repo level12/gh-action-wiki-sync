@@ -1,0 +1,64 @@
+name: Docs <-> Wiki
+
+on:
+  push:
+    branches:
+      # Name a branch "docs-preview" if you want commits to the branch to apply to the wiki
+      # immediately. Helpful if you want to make multiple updates, preview them, merge commits, etc.
+      # before finally merging to master.
+      - docs-preview
+      # The the above exception, doc updates will only by synced to the wiki when merged to master.
+      - master
+    paths:
+      - "docs/**"
+  # gollum is the wiki add/update event and this only triggers for the default branch.  I.e. if
+  # an update is made to the wiki, only the master branch will be updated.
+  gollum:
+
+
+jobs:
+  sync-docs:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: GitHub Wiki Sync
+        uses: level12/gh-wiki-sync-action
+        with:
+          debug: true
+          run-sync: false
+
+      # - name: Dump GitHub context
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJson(github) }}
+      #   run: echo "$GITHUB_CONTEXT"
+
+      # - name: Python prep
+      #   run: |
+      #     python3 --version
+      #     pwd
+      #     echo $PYTHONPATH
+      #     echo "${{ github.event.pages[0].summary }}"
+      #     # Apparently their image contains click already.
+      #     # python3 -m pip install --break-system-packages click
+
+      # - name: Sync docs to wiki
+      #   if: github.event_name != 'gollum'
+      #   env:
+      #     COMMIT_USER: ${{ github.event.head_commit.author.name }}
+      #     COMMIT_EMAIL: ${{ github.event.head_commit.author.email }}
+      #     GH_API_TOKEN: ${{ github.token }}
+      #   run: |
+      #     python3 mise/tasks/docs-sync wiki
+
+      # - name: Sync wiki to docs
+      #   if: github.event_name == 'gollum' && !contains(github.event.pages[0].summary, 'docs sync bot:')
+      #   env:
+      #     COMMIT_USER: ${{ github.actor }}
+      #     # No email available
+      #     GH_API_TOKEN: ${{ github.token }}
+      #   run: |
+      #     python3 mise/tasks/docs-sync docs

@@ -1,0 +1,28 @@
+name: GitHub Wiki Sync
+description: bi-directional sync between repo docs and GitHub wiki
+
+inputs:
+  debug:
+    description: 'Show debug info'
+    required: false
+    default: false
+  run-sync:
+    description: 'Run the sync.  Set false when debugging just the workflow.'
+    required: false
+    default: True
+  docs-path:
+    description: >
+      Relative to project root.  Use '' for project root.
+      EVERYTHING in this folder will be copied to the wiki except .git and .github
+    required: false
+    default: 'wiki'
+  exclude:
+    descripton: list of relative paths to exclude from sync
+    required: false
+    default: []
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  # args:
+  #   - ${{ inputs.who-to-greet }}
