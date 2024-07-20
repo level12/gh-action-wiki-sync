@@ -1,5 +1,7 @@
 from python:3.12
 
-copy wiki-sync.py entrypoint.sh /
+workdir /action
 
-entrypoint ["bash", "/entrypoint.sh"]
+copy src src
+
+entrypoint ["python", "/action/src/wiki-sync.py"]

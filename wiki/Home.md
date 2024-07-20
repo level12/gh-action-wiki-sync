@@ -1,1 +1,1 @@
-Hello Wiki Sync
+See sidebar for docs: `-->`
