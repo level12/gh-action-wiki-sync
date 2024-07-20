@@ -4,8 +4,6 @@ import shutil
 import subprocess
 import sys
 
-import click
-
 
 gh_repo = environ.get('REPOSITORY')
 run_sync = environ.get('INPUT_RUN-SYNC')

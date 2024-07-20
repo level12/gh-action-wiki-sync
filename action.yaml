@@ -16,10 +16,10 @@ inputs:
       EVERYTHING in this folder will be copied to the wiki except .git and .github
     required: false
     default: 'wiki'
-  exclude:
-    descripton: list of relative paths to exclude from sync
-    required: false
-    default: []
+  # exclude:
+  #   descripton: list of relative paths to exclude from sync, separate with newlines
+  #   required: false
+  #   default: ''
 
 runs:
   using: 'docker'

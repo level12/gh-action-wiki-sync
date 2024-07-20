@@ -7,10 +7,11 @@ on:
       # immediately. Helpful if you want to make multiple updates, preview them, merge commits, etc.
       # before finally merging to master.
       - docs-preview
-      # The the above exception, doc updates will only by synced to the wiki when merged to master.
-      - master
+      # The the above exception, doc updates will only by synced to the wiki when merged to the
+      # default branch.  Change this to your default branch name, e.g. "master"
+      - main
     paths:
-      - "docs/**"
+      - "wiki/**"
   # gollum is the wiki add/update event and this only triggers for the default branch.  I.e. if
   # an update is made to the wiki, only the master branch will be updated.
   gollum:
@@ -19,14 +20,13 @@ on:
 jobs:
   sync-docs:
     runs-on: ubuntu-24.04
-    env:
-      PYTHONPATH: ${{ github.workspace }}/src
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
       - name: GitHub Wiki Sync
-        uses: level12/gh-wiki-sync-action
+        uses: level12/gh-action-wiki-sync@main
         with:
           debug: true
           run-sync: false
