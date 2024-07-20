@@ -1,96 +1,87 @@
+#!/usr/bin/env python
 from os import environ
 from pathlib import Path
 import shutil
-import subprocess
 import sys
 
+import click
+from sync_utils import Git, sub_run
 
-gh_repo = environ.get('REPOSITORY')
-run_sync = environ.get('INPUT_RUN-SYNC')
-docs_dpath = environ.get('DOCS_DIR')
-workspace_dpath = environ.get('GITHUB_WORKSPACE')
+
+def bool_env(env_key: str):
+    val = environ.get(env_key, '')
+    return val.lower() in ('true', 't', '1', 'enable', 'on')
+
+
+is_gh_action: bool = bool_env('GITHUB_ACTIONS')
+gh_repo = environ['GITHUB_REPOSITORY']
+run_sync = bool_env('INPUT_RUN_SYNC')
+docs_rel_path = environ['INPUT_DOCS_PATH']
+gh_token = environ.get('GITHUB_TOKEN')
+event_name = environ['GITHUB_EVENT_NAME']
+
+workspace_dpath = Path(environ['GITHUB_WORKSPACE'])
+docs_dpath = workspace_dpath / docs_rel_path
 tmp_wiki_dpath = Path('/tmp/gh-wiki-sync')
-commit_user: str = environ.get('COMMIT_USER')
-commit_email: str = environ.get('COMMIT_EMAIL')
-is_gh_action: bool = bool(environ.get('GITHUB_ACTIONS', False))
-gh_api_token = environ.get('GH_API_TOKEN')
+commit_msg_prefix = 'wiki sync bot:'
+commit_msg = """
+{prefix} {src_message}
+
+Action: {message}
+[skip ci]
+""".strip()
 
 
-def stderr(text):
+def fail(text):
     print(text, file=sys.stderr)
-
-
-def sub_run(*args, capture=False, **kwargs) -> subprocess.CompletedProcess:
-    kwargs.setdefault('check', True)
-    kwargs.setdefault('capture_output', capture)
-    args = args + kwargs.pop('args', ())
-    return subprocess.run(args, **kwargs)
+    sys.exit(1)
 
 
 def gh_wiki_repo():
     if is_gh_action:
-        return f'https://x-access-token:{gh_api_token}@github.com/{gh_repo}.wiki.git'
+        return f'https://x-access-token:{gh_token}@github.com/{gh_repo}.wiki.git'
 
-    return f'git@github.com:{gh_repo}.wiki.git'
-
-
-class Git:
-    def __init__(self, repo_path: Path):
-        self.repo_path: Path = repo_path
-        self.config(commit_user, commit_email)
-
-    def __call__(self, *args, **kwargs):
-        return self.git(*args, **kwargs)
-
-    def config(self, user: str, email: str = ''):
-        if not is_gh_action:
-            # Local dev, don't mess with the config
-            return
-
-        user = user or environ.get('USER', 'DocSync Action')
-        email = email or 'devteam+gh-actions@level12.io'
-        self.git('config', 'user.name', user)
-        self.git('config', 'user.email', email)
-
-    def git(self, *args, in_repo=True, **kwargs):
-        cwd_path = self.repo_path if in_repo else None
-        return sub_run('git', args=args, cwd=cwd_path, **kwargs)
+    return environ.get('WIKI_REPO_PATH', f'git@github.com:{gh_repo}.wiki.git')
 
 
 def rsync(src: Path, dest: Path):
     sub_run('rsync', '-ac', '--delete', f'{src}/', dest, '--exclude', '.git')
 
 
-def main(ctx: click.Context, update: str):
+@click.command()
+@click.option('--print-wiki-repo', is_flag=True)
+def main(print_wiki_repo: bool | None):
     if not run_sync:
-        print('Confiugred to not run sync. Exiting early')
-        return
+        fail('Confiugred to not run sync. Exiting.')
+
+    if event_name not in ('push', 'gollum'):
+        fail(f'Unexpected event: {event_name}')
 
     if tmp_wiki_dpath.exists():
         shutil.rmtree(tmp_wiki_dpath)
     tmp_wiki_dpath.mkdir(parents=True)
 
-    print('commit_user', commit_user)
-    print('commit_email', commit_email)
-    print('is_gh_action', is_gh_action)
-
     wiki_repo = gh_wiki_repo()
-    print('wiki repo', wiki_repo)
+
+    print('Wiki repo:', wiki_repo)
+    if print_wiki_repo:
+        fail('Only printing wiki repo')
+
     sub_run('git', 'clone', '--single-branch', '--depth=1', wiki_repo, tmp_wiki_dpath)
 
-    if update == 'wiki':
+    if event_name == 'push':
+        # push event: update wiki
         rsync(f'{docs_dpath}/', tmp_wiki_dpath)
+
         git = Git(tmp_wiki_dpath)
         git('add', '.')
         message = 'update wiki from docs'
         push_args = '--set-upstream', wiki_repo
+        src_commit = Git(workspace_dpath).last_commit()
     else:
-        # Updating docs
-
-        # Prep to use the last wiki commit message in the commit we make in the main repo
-        log_result = Git(tmp_wiki_dpath).git('log', '-1', '--pretty=%B', capture=True)
-        wiki_commit_msg = log_result.stdout.decode('utf-8', errors='replace').strip()
-        if wiki_commit_msg.startswith('docs sync bot:'):
+        src_commit = Git(tmp_wiki_dpath).last_commit()
+        # gollum (gh wiki) event: update src docs
+        if src_commit.message.startswith(commit_msg_prefix):
             # We are in a loop.  The if: statement in the action should prevent this but no
             # harm in being careful.
             print('Loop detected.  The last wiki commit was from this sync action.  Exiting.')
@@ -101,17 +92,21 @@ def main(ctx: click.Context, update: str):
         # In the action, there should be no other changes in the repo.  But, when testing locally,
         # we'd only want to push changes in the docs directory.
         git('add', docs_dpath)
-        message = f'update docs from wiki\n\n{wiki_commit_msg}'
+        message = 'update docs from wiki'
         push_args = ()
 
-    result = git('diff', '--cached', '--exit-code', check=False)
+    result = git('diff', '--cached', '--exit-code', check=False, stdout=sys.stderr)
     if result.returncode not in (0, 1):
-        ctx.fail('`git diff` returned unexpected exit code')
+        fail('`git diff` returned unexpected exit code')
 
     if result.returncode == 1:
-        # --no-verify only really matters when running locally
-        git('commit', '-m', f'docs sync bot: {message}\n\n[skip ci]', '--no-verify')
-        git('push', *push_args)
+        msg = commit_msg.format(
+            prefix=commit_msg_prefix,
+            message=message,
+            src_message=src_commit.message,
+        )
+        git('commit', '-m', msg, '--author', src_commit.author, stdout=sys.stderr)
+        git('push', *push_args, stdout=sys.stderr)
         print('Changes pushed')
     else:
         print('No changes')

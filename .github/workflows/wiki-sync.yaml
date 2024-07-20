@@ -25,16 +25,17 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
       - name: GitHub Wiki Sync
         uses: level12/gh-action-wiki-sync@main
         with:
           debug: true
           run-sync: false
 
-      # - name: Dump GitHub context
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GITHUB_CONTEXT"
 
       # - name: Python prep
       #   run: |

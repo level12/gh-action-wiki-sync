@@ -6,3 +6,4 @@ python = "3.12"
 [env]
 _.python.venv.path = "{{ get_env(name='WORKON_HOME', default='/tmp') }}/gh-action-wiki-sync"
 _.python.venv.create = true
+PYTHONPATH = "{{ config_root }}"
