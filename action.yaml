@@ -2,10 +2,10 @@ name: GitHub Wiki Sync
 description: bi-directional sync between repo docs and GitHub wiki
 
 inputs:
-  debug:
-    description: 'Show debug info'
-    required: false
-    default: false
+  # debug:
+  #   description: 'Show debug info'
+  #   required: false
+  #   default: false
   run-sync:
     description: 'Run the sync.  Set false when debugging just the workflow.'
     required: false
@@ -25,4 +25,4 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   env:
-      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: github.token
