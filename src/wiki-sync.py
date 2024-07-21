@@ -71,19 +71,23 @@ def main(print_wiki_repo: bool | None):
 
     sub_run('git', 'clone', '--single-branch', '--depth=1', wiki_repo, tmp_wiki_dpath)
 
+    ws_git = Git(workspace_dpath)
+    wiki_git = Git(tmp_wiki_dpath)
+    if is_gh_action:
+        ws_git.safe()
+        wiki_git.safe()
+
     if event_name == 'push':
         # push event: update wiki
         rsync(f'{docs_dpath}/', tmp_wiki_dpath)
 
-        git = Git(tmp_wiki_dpath)
-        if is_gh_action:
-            git.safe()
-        git('add', '.')
+        wiki_git('add', '.')
         message = 'update wiki from docs'
         push_args = '--set-upstream', wiki_repo
-        src_commit = Git(workspace_dpath).last_commit()
+        src_commit = ws_git.last_commit()
+        dest_git = wiki_git
     else:
-        src_commit = Git(tmp_wiki_dpath).last_commit()
+        src_commit = wiki_git.last_commit()
         # gollum (gh wiki) event: update src docs
         if src_commit.message.startswith(commit_msg_prefix):
             # We are in a loop.  The if: statement in the action should prevent this but no
@@ -93,15 +97,14 @@ def main(print_wiki_repo: bool | None):
 
         rsync(f'{tmp_wiki_dpath}/', docs_dpath)
 
-        git = Git(workspace_dpath)
-        git.safe()
         # In the action, there should be no other changes in the repo.  But, when testing locally,
         # we'd only want to push changes in the docs directory.
-        git('add', docs_dpath)
+        ws_git('add', docs_dpath)
         message = 'update docs from wiki'
         push_args = ()
+        dest_git = ws_git
 
-    result = git('diff', '--cached', '--exit-code', check=False, stdout=sys.stderr)
+    result = dest_git('diff', '--cached', '--exit-code', check=False, stdout=sys.stderr)
     if result.returncode not in (0, 1):
         fail('`git diff` returned unexpected exit code')
 
@@ -111,8 +114,8 @@ def main(print_wiki_repo: bool | None):
             message=message,
             src_message=src_commit.message,
         )
-        git('commit', '-m', msg, '--author', src_commit.author, stdout=sys.stderr)
-        git('push', *push_args, stdout=sys.stderr)
+        dest_git('commit', '-m', msg, '--author', src_commit.author, stdout=sys.stderr)
+        dest_git('push', *push_args, stdout=sys.stderr)
         print('Changes pushed')
     else:
         print('No changes')

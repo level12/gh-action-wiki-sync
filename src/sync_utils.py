@@ -47,7 +47,12 @@ class Git:
         return self.git(*args, **kwargs)
 
     def last_commit(self):
-        result = self.git('log', '-1', '--pretty=format:%an|||%ae|||%B', capture=True)
+        try:
+            result = self.git('log', '-1', '--pretty=format:%an|||%ae|||%B', capture=True)
+        except subprocess.CalledProcessError as e:
+            print(e.stdout.decode('utf-8'))
+            print(e.stderr.decode('utf-8'))
+            raise
 
         return CommitMeta(
             *result.stdout.decode('utf-8', errors='replace').strip().split('|||'),
