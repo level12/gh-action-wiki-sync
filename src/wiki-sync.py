@@ -114,7 +114,16 @@ def main(print_wiki_repo: bool | None):
             message=message,
             src_message=src_commit.message,
         )
-        dest_git('commit', '-m', msg, '--author', src_commit.author, stdout=sys.stderr)
+        dest_git(
+            '-c',
+            f'user.name={src_commit.user}',
+            '-c',
+            f'user.email={src_commit.email}',
+            'commit',
+            '-m',
+            msg,
+            stdout=sys.stderr,
+        )
         dest_git('push', *push_args, stdout=sys.stderr)
         print('Changes pushed')
     else:
