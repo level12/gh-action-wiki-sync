@@ -76,6 +76,8 @@ def main(print_wiki_repo: bool | None):
         rsync(f'{docs_dpath}/', tmp_wiki_dpath)
 
         git = Git(tmp_wiki_dpath)
+        if is_gh_action:
+            git.safe()
         git('add', '.')
         message = 'update wiki from docs'
         push_args = '--set-upstream', wiki_repo
@@ -90,7 +92,9 @@ def main(print_wiki_repo: bool | None):
             return
 
         rsync(f'{tmp_wiki_dpath}/', docs_dpath)
+
         git = Git(workspace_dpath)
+        git.safe()
         # In the action, there should be no other changes in the repo.  But, when testing locally,
         # we'd only want to push changes in the docs directory.
         git('add', docs_dpath)

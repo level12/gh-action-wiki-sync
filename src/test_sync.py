@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from os import environ
 from pathlib import Path
+import shutil
 
+import pytest
 from sync_utils import Git, proj_src_dpath, sub_run
 
 
@@ -73,6 +75,12 @@ class Env:
 
 
 class TestLocal:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        tmp_dir = Path('/tmp/gh-wiki-sync')
+        if tmp_dir.exists():
+            shutil.rmtree(tmp_dir)
+
     def test_bad_event(self, tmp_path):
         env = Env(tmp_path)
         result = env.sync('foo', check=False)

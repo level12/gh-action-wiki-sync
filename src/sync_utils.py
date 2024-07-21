@@ -72,3 +72,6 @@ class Git:
     def make_working(self):
         self.git('config', '--bool', 'core.bare', 'false')
         self.git('checkout')
+
+    def safe(self):
+        self.git('config', '--global', '--add', 'safe.directory', self.repo_path)
