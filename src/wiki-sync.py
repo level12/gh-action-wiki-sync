@@ -36,6 +36,11 @@ def fail(text):
 
 def gh_wiki_repo():
     if is_gh_action:
+        if token_len := len(gh_token):
+            print('Token length:', token_len)
+        else:
+            fail('Running in action but GITHUB_TOKEN was empty.')
+
         return f'https://x-access-token:{gh_token}@github.com/{gh_repo}.wiki.git'
 
     return environ.get('WIKI_REPO_PATH', f'git@github.com:{gh_repo}.wiki.git')
