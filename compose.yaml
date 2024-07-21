@@ -1,0 +1,19 @@
+services:
+  app:
+    image: gh-action-sync-wiki:latest
+    container_name: gh-action-sync-wiki
+    # The build key is important is it keeps our local docker building new images when changes
+    # are made to the project.  Without it, once its built, it will keep using the image
+    # currently in docker.
+    build:
+      context: .
+    environment:
+      GITHUB_REPOSITORY: 'level12/gh-action-wiki-sync'
+      INPUT_RUN_SYNC: 'true'
+      INPUT_DOCS_PATH: 'wiki'
+      GITHUB_EVENT_NAME: 'push'
+      GITHUB_WORKSPACE: '/github/workspace'
+
+    # E.g. docker compose run --build --rm app
+    command:
+      - '--help'
