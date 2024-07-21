@@ -16,6 +16,8 @@ inputs:
       EVERYTHING in this folder will be copied to the wiki except .git and .github
     required: false
     default: 'wiki'
+  github_token:
+    required: true
   # exclude:
   #   descripton: list of relative paths to exclude from sync, separate with newlines
   #   required: false
@@ -24,5 +26,3 @@ inputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  env:
-      GITHUB_TOKEN: github.token

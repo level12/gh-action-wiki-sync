@@ -14,7 +14,7 @@ is_gh_action: bool = bool_env('GITHUB_ACTIONS')
 gh_repo = environ['GITHUB_REPOSITORY']
 run_sync = bool_env('INPUT_RUN_SYNC')
 docs_rel_path = environ['INPUT_DOCS_PATH']
-gh_token = environ.get('GITHUB_TOKEN')
+gh_token = environ.get('INPUT_GITHUB_TOKEN')
 event_name = environ['GITHUB_EVENT_NAME']
 
 workspace_dpath = Path(environ['GITHUB_WORKSPACE'])
@@ -41,7 +41,7 @@ def gh_wiki_repo():
         else:
             fail('Running in action but GITHUB_TOKEN was empty.')
 
-        return f'https://{gh_token}@github.com/{gh_repo}.wiki.git'
+        return f'https://x-access-token:{gh_token}@github.com/{gh_repo}.wiki.git'
 
     return environ.get('WIKI_REPO_PATH', f'git@github.com:{gh_repo}.wiki.git')
 
