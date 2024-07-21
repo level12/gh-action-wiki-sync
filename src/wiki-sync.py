@@ -41,7 +41,7 @@ def gh_wiki_repo():
         else:
             fail('Running in action but GITHUB_TOKEN was empty.')
 
-        return f'https://x-access-token:{gh_token}@github.com/{gh_repo}.wiki.git'
+        return f'https://{gh_token}@github.com/{gh_repo}.wiki.git'
 
     return environ.get('WIKI_REPO_PATH', f'git@github.com:{gh_repo}.wiki.git')
 
