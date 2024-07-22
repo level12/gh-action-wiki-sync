@@ -1,1 +1,1 @@
-See sidebar for docs: `-->`
+Welcome to the gh-action-wiki-sync wiki!
