@@ -11,10 +11,10 @@ This project can be updated from the upstream repo, see [updates](https://github
 
 From zero to hero (passing tests that is):
 
-1. Ensure [host dependencies] are installed:
+1. Ensure host dependencies are installed:
 
   - [reqs](https://github.com/level12/reqs): for virtualenv python deps
-  - [mise][https://mise.jdx.dev/]: for everything else
+  - [mise](https://mise.jdx.dev/): for everything else
 
 3. Run tests:
 
