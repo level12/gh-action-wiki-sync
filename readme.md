@@ -1,11 +1,11 @@
 # Wiki Sync GH Action
 
 
-A GitHub action that does bi-directional[^1] sync between a docs folder in your repo and the GH
+A GitHub action that does bi-directional sync between a docs folder in your repo and the GH
 wiki for that repo.
 
-[^1]: GH wiki doesn't trigger golum events on page delete.  Delete docs from repo, not wiki.
-
+Please take note of any [known issues](https://github.com/level12/gh-action-wiki-sync/issues) before
+using.
 
 ## Usage Example
 
