@@ -2,14 +2,6 @@ name: Docs <-> Wiki
 
 on:
   push:
-    branches:
-      # Name a branch "docs-preview" if you want commits to the branch to apply to the wiki
-      # immediately. Helpful if you want to make multiple updates, preview them, merge commits, etc.
-      # before finally merging to master.
-      - docs-preview
-      # The the above exception, doc updates will only by synced to the wiki when merged to the
-      # default branch.  Change this to your default branch name, e.g. "master"
-      - main
     paths:
       - "wiki/**"
       - ".github/workflows/**"

@@ -2,6 +2,7 @@
 from os import environ
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 
 import click
@@ -69,10 +70,30 @@ def main(print_wiki_repo: bool | None):
     if print_wiki_repo:
         fail('Only printing wiki repo')
 
-    sub_run('git', 'clone', '--single-branch', '--depth=1', wiki_repo, tmp_wiki_dpath)
-
     ws_git = Git(workspace_dpath)
     wiki_git = Git(tmp_wiki_dpath)
+
+    try:
+        sub_run(
+            'git',
+            'clone',
+            '--single-branch',
+            '--depth=1',
+            wiki_repo,
+            tmp_wiki_dpath,
+            capture=True,
+        )
+    except subprocess.CalledProcessError as e:
+        stderr = e.stderr.decode('utf-8')
+        if 'Repository not found' not in stderr:
+            raise
+        # There is apparently no way to automate the create of the wiki repo.  Or so said the
+        # support AI bot when I tried to send support a message asking them how to do it.
+        fail(
+            'The wiki must have at least one page before it can be synced.'
+            '  Create manually through the wiki UI.',
+        )
+
     if is_gh_action:
         ws_git.safe()
         wiki_git.safe()

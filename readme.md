@@ -4,8 +4,13 @@
 A GitHub action that does bi-directional sync between a docs folder in your repo and the GH
 wiki for that repo.
 
-Please take note of any [known issues](https://github.com/level12/gh-action-wiki-sync/issues) before
-using.
+Known issues:
+
+1. The wiki repo has to exist.  Create at least one page manually through the UI before syncing.
+2. There is no GitHub action event for a wiki page delete (#1).  Delete pages from the doc side to
+   avoid having them reappear.
+3. Edit conflicts would likely result in a broken sync until resolved manually (#5).
+
 
 ## Usage Example
 
